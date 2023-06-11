@@ -1,20 +1,23 @@
-# Usar la imagen oficial de Python en Alpine como base
-FROM python:3.11-alpine
+# Use an official Python runtime as a parent image
+FROM python:alpine3.18
 
-# Copiar el contenido del directorio local a /app en el contenedor
-COPY . .
-
-# Añadir el compilador y las librerías necesarias para instalar paquetes
-RUN apk update && apk add --no-cache --virtual .build-deps gcc musl-dev sqlite
-
-# Instalar las dependencias de Python
-RUN pip install flask
-
-# Desinstalar el compilador y las librerías no necesarias
-RUN apk del .build-deps
-
-# Establecer el directorio de trabajo en el contenedor
+# Set the working directory in the container to /app
 WORKDIR /app
 
-# Iniciar el servidor Flask
-CMD ["sh", "init.sh"]
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir flask python-dotenv
+
+# Install sqlite3 from the alpine repositories
+RUN apk add --no-cache sqlite
+
+# Run the SQL script to create the database
+RUN sqlite3 iot_bbdd.db < init.sql
+
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
+
+# Run the flask server when the container launches
+CMD ["python", "app.py"]
