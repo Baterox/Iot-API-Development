@@ -1,0 +1,10 @@
+on: push
+name: deploy
+jobs:
+  build:
+    runs-on: python:alpine3.18
+    steps:
+      - uses: actions/checkout@v2
+      - name: docker build flask app
+        run: |
+          docker build -t api_iot .
